@@ -1,0 +1,10 @@
+{
+  "left_fast": {
+    "pairing_role": "both",
+    "rois": []
+  },
+  "right_fast": {
+    "pairing_role": "both",
+    "rois": []
+  }
+}
