@@ -47,6 +47,34 @@ class PairingHub:
         self.max_per_key = int(max_per_key)
         self.strict_class = bool(strict_class)
         self._warned_unknown_class = False  # 避免重複洗版警告
+        
+        # 放在 PairingHub 類別內，其他方法之後都不用動
+    def snapshot(self, roi_id: str, now_ms: int, max_per_class: int = 5):
+        """
+        回傳形如 {class_id: [Candidate, ...]} 的 dict，
+        僅包含未過期且未 used 的候選；每個 class 最多取 max_per_class 筆（由新到舊）。
+        """
+        out = {}
+        for (rid, cls_id), dq in getattr(self, "pool", {}).items():
+            if rid != roi_id:
+                continue
+            items = []
+            # dq 的尾端通常是最新；反向迭代，取最近的
+            for c in reversed(dq):
+                ts = int(getattr(c, "ts_ms", 0))
+                ttl = int(getattr(c, "ttl_ms", 0))
+                used = bool(getattr(c, "used", False))
+                if used:
+                    continue
+                if ttl > 0 and now_ms - ts > ttl:
+                    continue
+                items.append(c)
+                if len(items) >= max_per_class:
+                    break
+            if items:
+                out[int(cls_id)] = items
+            return out
+
 
     # ---- helpers ----
     def _class_ok(self, cls: int) -> bool:

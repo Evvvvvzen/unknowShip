@@ -20,21 +20,23 @@ YOLOV7_WEIGHTS = YOLOV7_DIR / "ship_weights/best.pt"
 
 # ── 輸入來源（可多路） ───────────────────────────────────────────────────────
 SOURCES = [
-    "./video/left_fast.mp4",   # index=0（左邊）：這路啟用 Gate
-    "./video/right_fast.mp4",
+    # "./video/left_fast.mp4",   # index=0（左邊）：這路啟用 Gate
+    # "./video/right_fast.mp4",
+    "./video/20250918_left.mp4",
+    "./video/20250918_right.mp4",
 ]
 
 # ── YOLO 推論參數 ────────────────────────────────────────────────────────────
 IMG_SIZE = 1280             # YOLOv7 輸入影像大小（會 resize 成正方形）
 CLASS_FILTER = None          # 若指定 class index，僅保留該類別；None = 不過濾
-CONF_THRES = 0.45             # 物件偵測的信心分數閾值 (confidence threshold)
-IOU_THRES = 0.5              # NMS 的 IoU 閾值（重疊過大則刪除）
+CONF_THRES = 0.35             # 物件偵測的信心分數閾值 (confidence threshold)
+IOU_THRES = 0.4              # NMS 的 IoU 閾值（重疊過大則刪除）
 DET_DEVICE = "0" if torch.cuda.is_available() else "cpu" # 偵測裝置：GPU id=0，如果沒有 GPU 就用 CPU
 
 # ── DeepSORT（TorchReID） ───────────────────────────────────────────────────
 DS_MAX_AGE = 150              # track 最多幾幀沒匹配就刪除（避免 ghost）
 DS_N_INIT = 10               # track 至少要連續匹配 N 幀才確定成為有效目標
-DS_MAX_COS_DIST = 0.3       # ReID embedding 最大 cosine distance（越小越嚴格）
+DS_MAX_COS_DIST = 0.2       # ReID embedding 最大 cosine distance（越小越嚴格）
 DS_NN_BUDGET = 100           # ReID 特徵向量緩衝區大小（記憶多少歷史特徵）
 REID_MODEL_NAME = "osnet_ibn_x1_0"   # TorchReID 模型名稱（特徵抽取 backbone）
 REID_ON_GPU = torch.cuda.is_available() # ReID 是否跑在 GPU（可提升效能）
@@ -148,8 +150,9 @@ def main():
     procs = []
     for i, src in enumerate(SOURCES):
         
-        # cam[0]（左鏡頭）→ 右邊 10%；cam[1]（右鏡頭）→ 左邊 10%
+        # cam[0]（左鏡頭）→ 右邊 50%；cam[1]（右鏡頭）→ 左邊 10%
         edge_side = "right" if i == 0 else "left"
+        edge_roi_ratio = 0.1 if i == 0 else 0.1
         
         pt = ProcessThread(
             src_idx = i, 
@@ -184,8 +187,10 @@ def main():
             pairing_ttl_ms=6000,
             pairing_reid_thresh=0.35,
             auto_edge_roi=True,
-            edge_roi_ratio=0.10,      # 10%
-            edge_side=edge_side,       # index 決定：0→right、1→left
+            edge_roi_ratio=edge_roi_ratio,   # ★ cam0=0.5, cam1=0.1
+            edge_side=edge_side,             # ★ cam0=right, cam1=left
+            # edge_roi_ratio=0.10,      # 10%
+            # edge_side=edge_side,       # index 決定：0→right、1→left
         )
         pt.start()
         procs.append(pt)

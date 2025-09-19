@@ -202,3 +202,4 @@ def status_text_and_color(track_state: dict, obs_n: int):
     if track_state.get("ambiguous"):
         return f"OBS* {m}/{obs_n}", (0, 255, 255)   # 黃色提示歧義
     return f"OBS {m}/{obs_n}", (255, 255, 255)      # 白色一般觀察
+

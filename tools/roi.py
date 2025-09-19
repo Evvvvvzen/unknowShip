@@ -113,8 +113,3 @@ def draw_roi_edge_line(frame, side: str, ratio: float, color=(0, 255, 0), thickn
     h, w = frame.shape[:2]
     x = edge_x(frame.shape, side, ratio)
     cv2.line(frame, (x, 0), (x, h-1), color, thickness)
-    # 也標一下文字
-    label = f"EDGE[{side}] {int(ratio*100)}%"
-    y = max(20, int(0.04 * h))
-    cv2.putText(frame, label, (max(5, x - 120 if side == 'right' else x + 8), y),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)

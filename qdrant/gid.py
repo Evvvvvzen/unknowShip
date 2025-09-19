@@ -75,7 +75,7 @@ class GIDAssigner:
         max_dt_ms: int,
         topk: int,
         seq_start: int = 1,
-        debug: bool = True,
+        debug: bool = False,
         debug_top_hits: int = 10,
         debug_dump_per_frame: bool = True,
     ):
